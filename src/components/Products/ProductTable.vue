@@ -2,7 +2,7 @@
     <div v-show="showAlert" ref="alert1" :class="{'alert-danger': !success, 'alert-success': success}" class="alert fade show" role="alert">
     </div>
     <!-- Table of products -->
-    <product-operations :suppliers="suppliers"/>
+    <product-operations @ApplyFilterEvent="OnApplyFilters" :suppliers="suppliers"/>
     <table class="table table-hover text-center table-bordered">
     <thead class="align-top bg-light">
         <tr>
@@ -25,7 +25,6 @@
         <template #title>Delete product</template>
         <template #body>Are you sure you want to delete this product?</template>
     </modal-yes-no>
-
 </template>
 
 <script>
@@ -65,6 +64,11 @@ export default {
         OnProductDelete: function(id){
             //Passing id of product for delete operation
             this.id_product=id;
+        },
+        OnApplyFilters: function(suppliers){
+            this.listProducts=this.products;
+            if(suppliers.length>0)
+                this.listProducts=this.listProducts.filter(el=> suppliers.find(id=> id===el.supplierId))
         },
         ShowAlert: function(message, success){
             this.$refs.alert1.innerText = message;
