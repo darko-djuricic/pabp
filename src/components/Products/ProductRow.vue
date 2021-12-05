@@ -69,9 +69,9 @@ export default {
                 orderDetails+=`<tr >
                 <td class="ps-5">
                 <h4>Order #${o.orderId}</h4>
-                <b class="fw-bold">Quantity: </b>${o.quantity}<br>
-                <b class="fw-bold">Discount: </b>${o.discount*100}%<br>
-                <b class="fw-bold">Unit price: </b>${o.unitPrice}<br>
+                <b class="fw-bold">Quantity: </b><span>${o.quantity}</span><br>
+                <b class="fw-bold">Discount: </b><span class="${o.discount>0?'text-primary':''}">${o.discount*100}%</span><br>
+                <b class="fw-bold">Unit price: </b><span class='text-success'>${o.unitPrice}</span><br>
                 </td>
             </tr>`
             });
