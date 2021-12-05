@@ -3,27 +3,14 @@
   <div class="container pt-5 mt-5">
     <div v-if="selected" class="pt-5">
       <!-- Breadcrumb -->
-      <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item">
-            <a href="#" @click="selected = undefined">Home</a>
-          </li>
-          <li class="breadcrumb-item active" aria-current="page">
-            {{ selected[0].category.categoryName }}
-          </li>
-        </ol>
-      </nav>
-      <product-table :products="selected" />
+      <breadcrumb @homeEvent="OnHome">{{category.categoryName}}</breadcrumb>
+      <product-table @productsChangeEvent="OnProductChange" :category="category" :products="selected" :suppliersList="suppliers" />
     </div>
     <div class="text-center pt-5" v-else>
       <h1 class="display-4 text-center mb-5">Welcome! Choose category:</h1>
       <div class="row pt-3">
-        <categories
-          v-for="c in categories"
-          :key="c.categoryId"
-          @click="OnSelectedCategory(c.categoryId)"
-        >
-          <template #header>{{ c.categoryName }}</template>
+        <categories v-for="c in categories" :key="c.categoryId" @click="OnSelectedCategory(c.categoryId)">
+          <template #header>{{ c.categoryName }} ({{NumOfProducts(c.categoryId)}})</template>
           <template #desc>{{ c.description }}</template>
         </categories>
       </div>
@@ -35,70 +22,106 @@
 import Navbar from "./components/Others/Navbar.vue";
 import Categories from "./components/Categories/Categories.vue";
 import ProductTable from "./components/Products/ProductTable.vue";
-import axios from "axios";
+import Breadcrumb from './components/Others/Breadcrumb.vue';
+
 
 export default {
   name: "App",
   data() {
     return {
-      products: undefined,
+      products: [],
       categories: undefined,
-      selected: undefined,
       suppliers: undefined,
+      orderDetails: undefined,
+      selected: undefined,
+      category: "",
     };
   },
   components: {
     Navbar,
     Categories,
     ProductTable,
+    Breadcrumb,
   },
   methods: {
     GetProducts: function () {
-      axios
+      this.$axios
         .get("http://94.156.189.137:8000/api/Products")
         .then((res) => {
           this.products = res.data;
+
         })
         .catch((err) => {
-          alert("ERROR " + err.message);
+          console.error(err);
+          this.ErrorMessage('We cannot load products');
         });
     },
     GetCategories: function () {
-      axios
+      this.$axios
         .get("http://94.156.189.137:8000/api/Categories")
         .then((res) => {
           this.categories = res.data;
         })
         .catch((err) => {
-          alert("ERROR " + err.message);
+          console.error(err);
+          this.ErrorMessage('We cannot load categories');
         });
     },
     GetSuppliers: function () {
-      axios
+      this.$axios
         .get("http://94.156.189.137:8000/api/Suppliers")
         .then((res) => {
           this.suppliers = res.data;
         })
         .catch((err) => {
-          alert("ERROR " + err.message);
+          console.error(err);
+          this.ErrorMessage('We cannot load suppliers');
+        });
+    },
+    GetOrderDetails: function(){
+      this.$axios
+        .get("http://94.156.189.137:8000/api/OrderDetails")
+        .then((res) => {
+          this.orderDetails=res.data;
+          console.log(res.data[0]);
+        })
+        .catch((err) => {
+          console.error(err);
+          this.ErrorMessage('We cannot load suppliers');
         });
     },
     OnSelectedCategory: function (id) {
+      this.category=this.categories.find((el) => el.categoryId === id);
       this.selected = this.products.filter((el) => el.categoryId === id);
 
-      //Getting category and supplier for products
-      this.selected.forEach((p) => {
-        let supp = this.suppliers.find((el) => el.supplierId === p.supplierId);
-        let cat = this.categories.find((el) => el.categoryId === id);
-        if (supp) p.supplier = supp;
-        if (cat) p.category = cat;
-      });
+      if(this.selected.length>0){
+        //Getting category, supplier and order details for products
+        this.selected.forEach((p) => {
+          let supp = this.suppliers.find((el) => el.supplierId === p.supplierId);
+          let cat = this.categories.find((el) => el.categoryId === id);
+          let ordLst= this.orderDetails.filter(el=> el.productId === p.productId)
+          if (supp) p.supplier = supp;
+          if (cat) p.category = cat;
+          if(ordLst) p.orderDetails=ordLst;
+        });
+      }
     },
+    OnProductChange: function(){
+     this.GetProducts()
+    },
+    OnHome: function()  { this.selected = undefined },
+    NumOfProducts: function(id){
+      return this.products.filter(el=>el.categoryId===id).length;
+    },
+    ErrorMessage: function(message){
+      this.$vueSimpleAlert.alert(`${message}. Please, try later.`, 'Error', 'error')
+    }
   },
-  mounted() {
+  created() {
     this.GetCategories();
     this.GetProducts();
     this.GetSuppliers();
+    this.GetOrderDetails();
   },
 };
 </script>
