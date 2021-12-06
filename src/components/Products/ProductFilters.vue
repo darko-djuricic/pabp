@@ -26,9 +26,9 @@
         <strong>Pick a supplier:</strong><br><br>
         <small v-show="listSuppliers.length==0">*No available suppliers</small>
         <div class="form-check" v-for="s in listSuppliers" :key="s.supplierId" @change="AddToFilter(s.supplierId)">
-            <input class="form-check-input" type="checkbox" :value="s.supplierId" :id="SupplierId(s)">
-            <label class="form-check-label" :for="SupplierId(s)">
-                {{s.companyName}}
+            <input class="form-check-input" type="checkbox" :value="s.supplierId" :id="supplierId(s)">
+            <label class="form-check-label" :for="supplierId(s)">
+                {{s.companyName}} 
             </label>
         </div>
     </div>
@@ -56,7 +56,7 @@ export default {
             resetShow: false,
             discontinued: false,
             minRange: Math.min.apply(null, this.unitPrices),
-            maxRange: Math.max.apply(null, this.unitPrices),
+            maxRange: Math.ceil(Math.max.apply(null, this.unitPrices)),
             selectedRange: Math.max.apply(null, this.unitPrices)
         }
     },
@@ -88,11 +88,11 @@ export default {
         }
     },
     computed:{
-        SupplierId(){
+        supplierId(){
             return function(supp){
                 return `${supp.companyName.replace(' ','')}${supp.supplierId}`
             };
-        }
+        },
     },
     mounted(){
         

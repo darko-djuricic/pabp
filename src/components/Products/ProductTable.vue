@@ -1,6 +1,6 @@
 <template>
     <!-- Table of products -->
-    <div v-if="!showForm">
+    <div v-if="!showForm" class="mb-5">
         <product-filters v-if="showFilters" :unitPrices="unitPrices" @ApplyFilterEvent="OnApplyFilters" :suppliers="suppliers"/>
         <table class="table table-hover text-center table-bordered">
             <thead class="align-middle bg-light">
@@ -97,6 +97,7 @@ export default {
             this.showFilters=false;
             this.$axios.delete(`http://94.156.189.137:8000/api/Products/${id}`)
             .then(()=>{
+                this.originalProductsCopy=this.originalProductsCopy.filter(p=>p.productId!==id);
                 this.listProducts=this.listProducts.filter(p=>p.productId!==id);
                 this.$emit('productsChangeEvent', null);
                 this.$vueSimpleAlert.alert('You have successfully deleted the product', 'Delete confirmation', 'success', {
@@ -113,6 +114,7 @@ export default {
         OnApplyFilters: function(filters){
             let functions=[];
             this.listProducts=this.originalProductsCopy;
+            console.log(this.originalProductsCopy);
 
             if(filters.suppliers.length>0){
                 functions.push(el=> filters.suppliers.find(id=> id===el.supplierId));
@@ -185,8 +187,8 @@ export default {
         },
         //Updating unit prices and suppliers for the filter
         UpdateUnitPricesSuppliers: function(){
-            this.unitPrices=this.listProducts.map(el=>el.unitPrice);
-            this.suppliers=[...new Set(this.listProducts.map(el=>el.supplier).filter(el=>el))]
+            this.unitPrices=this.originalProductsCopy.map(el=>el.unitPrice);
+            this.suppliers=[...new Set(this.originalProductsCopy.map(el=>el.supplier).filter(el=>el))]
             this.showForm=false;
             this.showFilters=true;
             this.listProducts.sort((a,b)=>a.reorderLevel<b.reorderLevel)
@@ -194,7 +196,9 @@ export default {
         UpdateSupplier(productsList, newProduct){
             let obj= productsList.find(el=>el.productId===newProduct.productId)
             obj.supplier=this.suppliersList.find(el=>el.supplierId===newProduct.supplierId)
-        }
-    }
+        },
+        
+    },
+
 }
 </script>

@@ -7,13 +7,16 @@
       <product-table @productsChangeEvent="OnProductChange" :category="category" :products="selected" :suppliersList="suppliers" />
     </div>
     <div class="text-center pt-5" v-else>
-      <h1 class="display-4 text-center mb-5">Welcome! Choose category:</h1>
-      <div class="row pt-3">
-        <categories v-for="c in categories" :key="c.categoryId" @click="OnSelectedCategory(c.categoryId)">
-          <template #header>{{ c.categoryName }} ({{NumOfProducts(c.categoryId)}})</template>
-          <template #desc>{{ c.description }}</template>
-        </categories>
+      <div v-if='isLoaded'>
+        <h1 class="display-4 text-center mb-5">Welcome! Choose category:</h1>
+        <div class="row pt-3">
+          <categories v-for="c in categories" :key="c.categoryId" @click="OnSelectedCategory(c.categoryId)">
+            <template #header>{{ c.categoryName }} ({{NumOfProducts(c.categoryId)}})</template>
+            <template #desc>{{ c.description }}</template>
+          </categories>
+        </div>
       </div>
+      <spinner v-else />
     </div>
   </div>
 </template>
@@ -23,16 +26,18 @@ import Navbar from "./components/Others/Navbar.vue";
 import Categories from "./components/Categories/Categories.vue";
 import ProductTable from "./components/Products/ProductTable.vue";
 import Breadcrumb from './components/Others/Breadcrumb.vue';
+import Spinner from './components/Others/Spinner.vue';
 
 
 export default {
   name: "App",
   data() {
     return {
-      products: [],
+      products: undefined,
       categories: undefined,
       suppliers: undefined,
       orderDetails: undefined,
+      orders: undefined,
       selected: undefined,
       category: "",
     };
@@ -42,6 +47,12 @@ export default {
     Categories,
     ProductTable,
     Breadcrumb,
+    Spinner,
+  },
+  computed:{
+    isLoaded(){
+      return this.products && this.categories && this.suppliers && this.orderDetails;
+    }
   },
   methods: {
     GetProducts: function () {
@@ -83,12 +94,21 @@ export default {
         .get("http://94.156.189.137:8000/api/OrderDetails")
         .then((res) => {
           this.orderDetails=res.data;
-          console.log(res.data[0]);
         })
         .catch((err) => {
           console.error(err);
           this.ErrorMessage('We cannot load suppliers');
         });
+    },
+    GetOrders: function(){
+      this.$axios.get("http://94.156.189.137:8000/api/Orders")
+          .then(()=>{
+              
+          })
+          .catch(err=>{
+              console.error(err);
+              this.$vueSimpleAlert.alert(err.message, 'Error', 'error')
+          })
     },
     OnSelectedCategory: function (id) {
       this.category=this.categories.find((el) => el.categoryId === id);
@@ -122,6 +142,7 @@ export default {
     this.GetProducts();
     this.GetSuppliers();
     this.GetOrderDetails();
+    this.GetOrders();
   },
 };
 </script>

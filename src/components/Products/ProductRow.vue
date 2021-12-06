@@ -3,12 +3,12 @@
         <td @click="UpdateProduct(product)" >{{product.productId}}</td>
         <td @click="UpdateProduct(product)">{{product.productName}}</td>
         <td @click="UpdateProduct(product)">{{quantityPerUnit}}</td>
-        <td @click="UpdateProduct(product)">{{supplier}}</td>  
+        <td :class="stillLinkKolone" class="text-decoration-underline" @click="ShowSupplier(product.supplier)">{{supplier}}</td>  
         <td @click="UpdateProduct(product)">{{product.unitPrice}}</td>  
         <td @click="UpdateProduct(product)">{{product.unitsInStock}}</td>  
         <td @click="UpdateProduct(product)">{{product.unitsOnOrder}}</td>
         <td @click="UpdateProduct(product)">{{product.reorderLevel}}</td>
-        <td><a @click="ShowOrderDetails(product.orderDetails, product.productName)" class="text-primary">Show</a></td>
+        <td><a @click="ShowOrderDetails(product.orderDetails, product.productName)" :class="stillLinkKolone">Show</a></td>
         <td @click="UpdateProduct(product)" class="text-success fw-bold">{{totalValue}}</td>
         <td class="bg-light">
             <!-- <a href="#modalYesNo" data-bs-toggle="modal" @click="DeleteProduct(product.productId)">
@@ -48,6 +48,9 @@ export default {
         quantityPerUnit(){
             return this.product.quantityPerUnit?this.product.quantityPerUnit:'/';
         },
+        stillLinkKolone(){
+            return {'text-light': this.product.discontinued,'text-primary': !this.product.discontinued};
+        }
     },
     methods:{
         DeleteProduct: function(product){
@@ -83,9 +86,30 @@ export default {
                 position: 'top',
                 width: 800
             })
+        },
+        ShowSupplier(supplier){
+            Object.keys(supplier).map(k=>{
+                if(!supplier[k])
+                    supplier[k]='Not defined';
+            })
+            this.$vueSimpleAlert.alert('','','',{
+                title: `Supplier info`,
+                html: `<div class='text-start mt-3'>
+                        <h6 class='border-bottom'><b>Company name:</b> ${supplier.companyName}</h6>
+                        <h6 class='border-bottom'><b>Country:</b> ${supplier.country}</h6>
+                        <h6 class='border-bottom'><b>City:</b> ${supplier.city}</h6>
+                        <h6 class='border-bottom'><b>Address:</b> ${supplier.address}</h6>
+                        <h6 class='border-bottom'><b>Region:</b> ${supplier.region}</h6>
+                        <h6 class='border-bottom'><b>Postal code:</b> ${supplier.postalCode}</h6>
+                        <h6 class='border-bottom'><b>Fax:</b> ${supplier.fax}</h6>
+                        <h6 class='border-bottom'><b>Phone:</b> ${supplier.phone}</h6>
+                        <h6 class='border-bottom'><b>Contact name:</b> ${supplier.contactName}</h6>
+                        <h6 class='border-bottom'><b>Contact title:</b> ${supplier.contactTitle}</h6>
+                        </div>`,
+                position: 'top',
+            })
         }
-    }
-
+    },
 }
 </script>
 
